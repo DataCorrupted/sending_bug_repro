@@ -2,7 +2,7 @@ SWIFTC ?= swiftc
 CLANG  ?= clang
 SDK    := $(shell xcrun --show-sdk-path)
 
-.PHONY: all clean run
+.PHONY: all clean run sil
 
 all: sending_bug_repro
 
@@ -23,5 +23,10 @@ run: clean sending_bug_repro
 	@echo "=== Swift handler (crash expected without fix) ==="
 	NSZombieEnabled=YES MallocScribble=1 ./sending_bug_repro --swift
 
+sil: main.sil
+
+main.sil: main.swift Legacy.h
+	$(SWIFTC) -import-objc-header Legacy.h -sdk $(SDK) -disable-bridging-pch -emit-sil main.swift -o main.sil
+
 clean:
-	rm -f *.o sending_bug_repro
+	rm -f *.o *.sil sending_bug_repro
